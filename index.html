@@ -92,16 +92,17 @@
         </div>
     </div>
 
-    <!-- MODAL: Panel de Administración (Agregar Ofertas) -->
+    <!-- MODAL: Panel de Administración (Agregar / Editar Ofertas) -->
     <div id="modal-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50 px-4 overflow-y-auto">
         <div class="bg-white rounded-xl max-w-2xl w-full p-6 shadow-2xl relative my-8">
             <div class="flex justify-between items-center mb-4 border-b pb-3">
-                <h3 class="text-xl font-bold text-morena">Panel de Administración - Agregar Empleo</h3>
+                <h3 id="modal-admin-titulo" class="text-xl font-bold text-morena">Panel de Administración - Agregar Empleo</h3>
                 <button onclick="cerrarPanelAdmin()" class="text-gray-500 hover:text-gray-700 font-bold text-xl">&times;</button>
             </div>
 
-            <!-- Formulario de Registro -->
-            <form id="form-empleo" onsubmit="agregarEmpleo(event)" class="space-y-4">
+            <!-- Formulario de Registro / Edición -->
+            <form id="form-empleo" onsubmit="guardarEmpleo(event)" class="space-y-4">
+                <input type="hidden" id="empleo-id">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700">Nombre de la Empresa</label>
                     <input type="text" id="empresa" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
@@ -119,9 +120,9 @@
                     <input type="text" id="sueldo" placeholder="Ej. $8,000 mensuales / A convenir" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700">URL de la Imagen (Opcional)</label>
-                    <input type="url" id="imagen" placeholder="https://ejemplo.com/logo-empresa.jpg" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
-                    <p class="text-xs text-gray-500 mt-1">Puedes pegar el enlace directo de una imagen de internet o logotipo.</p>
+                    <label class="block text-sm font-semibold text-gray-700">Imagen de la Vacante (Subir archivo)</label>
+                    <input type="file" id="imagen-file" accept="image/*" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena bg-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-morena file:text-white hover:file:bg-morena-dark cursor-pointer">
+                    <p class="text-xs text-gray-500 mt-1">Selecciona una imagen desde tu dispositivo (se guardará optimizada).</p>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700">Descripción del Puesto</label>
@@ -131,15 +132,18 @@
                     <label class="block text-sm font-semibold text-gray-700">WhatsApp para enviar C.V. (Ej: 524341234567)</label>
                     <input type="text" id="whatsapp" placeholder="524341234567" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
                 </div>
-                <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" onclick="cerrarPanelAdmin()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cerrar</button>
-                    <button type="submit" class="px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition font-semibold">Publicar Oferta</button>
+                <div class="flex justify-between items-center pt-4">
+                    <button type="button" id="btn-cancelar-edicion" onclick="resetearFormulario()" class="hidden px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition text-sm">Cancelar Edición</button>
+                    <div class="flex gap-3 ml-auto">
+                        <button type="button" onclick="cerrarPanelAdmin()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cerrar</button>
+                        <button type="submit" id="btn-submit-empleo" class="px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition font-semibold">Publicar Oferta</button>
+                    </div>
                 </div>
             </form>
 
-            <!-- Lista para eliminar ofertas existentes -->
+            <!-- Lista para gestionar ofertas existentes (Editar / Eliminar) -->
             <div class="mt-8 border-t pt-6">
-                <h4 class="text-lg font-bold text-gray-800 mb-3">Ofertas Publicadas (Eliminar)</h4>
+                <h4 class="text-lg font-bold text-gray-800 mb-3">Ofertas Publicadas (Gestionar)</h4>
                 <div id="lista-admin-empleos" class="space-y-2 max-h-48 overflow-y-auto">
                     <!-- Se llena dinámicamente -->
                 </div>
@@ -150,7 +154,7 @@
     <!-- Script de Lógica y Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDV6UAIZkZQZBQzIRAPbPDQOXlVEuor1X0",
@@ -166,6 +170,7 @@
         const db = getFirestore(app);
 
         let esAdmin = false;
+        let imagenBase64Actual = "";
 
         window.abrirModalAdmin = function() {
             if (esAdmin) {
@@ -202,6 +207,26 @@
 
         window.cerrarPanelAdmin = function() {
             document.getElementById('modal-admin').classList.add('hidden');
+            resetearFormulario();
+        }
+
+        window.resetearFormulario = function() {
+            document.getElementById('form-empleo').reset();
+            document.getElementById('empleo-id').value = '';
+            document.getElementById('modal-admin-titulo').innerText = "Panel de Administración - Agregar Empleo";
+            document.getElementById('btn-submit-empleo').innerText = "Publicar Oferta";
+            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
+            imagenBase64Actual = "";
+        }
+
+        // Convertir imagen seleccionada a Base64 para almacenarla directo en Firestore
+        function convertirImagenABase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
         }
 
         function escucharEmpleos() {
@@ -248,26 +273,41 @@
             });
         }
 
-        window.agregarEmpleo = async function(e) {
+        window.guardarEmpleo = async function(e) {
             e.preventDefault();
-            const nuevoEmpleo = {
+            const id = document.getElementById('empleo-id').value;
+            const fileInput = document.getElementById('imagen-file');
+            
+            let imagenUrl = imagenBase64Actual;
+            if (fileInput.files && fileInput.files[0]) {
+                imagenUrl = await convertirImagenABase64(fileInput.files[0]);
+            }
+
+            const datosEmpleo = {
                 empresa: document.getElementById('empresa').value,
                 puesto: document.getElementById('puesto').value,
                 domicilio: document.getElementById('domicilio').value,
                 sueldo: document.getElementById('sueldo').value,
-                imagen: document.getElementById('imagen').value,
+                imagen: imagenUrl,
                 descripcion: document.getElementById('descripcion').value,
-                whatsapp: document.getElementById('whatsapp').value,
-                fecha: new Date()
+                whatsapp: document.getElementById('whatsapp').value
             };
 
             try {
-                await addDoc(collection(db, "empleos"), nuevoEmpleo);
-                alert("¡Oferta de empleo agregada exitosamente!");
-                document.getElementById('form-empleo').reset();
-                cerrarPanelAdmin();
+                if (id) {
+                    // Actualizar empleo existente
+                    await updateDoc(doc(db, "empleos", id), datosEmpleo);
+                    alert("¡Oferta de empleo actualizada exitosamente!");
+                } else {
+                    // Crear nuevo empleo
+                    datosEmpleo.fecha = new Date();
+                    await addDoc(collection(db, "empleos"), datosEmpleo);
+                    alert("¡Oferta de empleo agregada exitosamente!");
+                }
+                resetearFormulario();
+                cargarEmpleosAdmin();
             } catch (error) {
-                console.error("Error al agregar empleo: ", error);
+                console.error("Error al guardar empleo: ", error);
                 alert("Hubo un error al guardar el empleo.");
             }
         }
@@ -289,16 +329,55 @@
 
                 const item = document.createElement('div');
                 item.className = "flex justify-between items-center bg-gray-50 p-3 rounded-lg border";
+                
+                // Escapar comillas para inyectar correctamente en el evento onclick
+                const dataStr = encodeURIComponent(JSON.stringify({
+                    id,
+                    empresa: data.empresa || '',
+                    puesto: data.puesto || '',
+                    domicilio: data.domicilio || '',
+                    sueldo: data.sueldo || '',
+                    imagen: data.imagen || '',
+                    descripcion: data.descripcion || '',
+                    whatsapp: data.whatsapp || ''
+                }));
+
                 item.innerHTML = `
                     <div>
                         <p class="font-bold text-sm text-gray-800">${data.puesto} <span class="text-xs font-normal text-gray-500">(${data.empresa})</span></p>
                     </div>
-                    <button onclick="eliminarEmpleo('${id}')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                        Eliminar
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="prepararEdicion('${dataStr}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                            Editar
+                        </button>
+                        <button onclick="eliminarEmpleo('${id}')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                            Eliminar
+                        </button>
+                    </div>
                 `;
                 listaDiv.appendChild(item);
             });
+        }
+
+        window.prepararEdicion = function(encodedData) {
+            const data = JSON.parse(decodeURIComponent(encodedData));
+            
+            document.getElementById('empleo-id').value = data.id;
+            document.getElementById('empresa').value = data.empresa;
+            document.getElementById('puesto').value = data.puesto;
+            document.getElementById('domicilio').value = data.domicilio;
+            document.getElementById('sueldo').value = data.sueldo;
+            document.getElementById('descripcion').value = data.descripcion;
+            document.getElementById('whatsapp').value = data.whatsapp;
+            
+            imagenBase64Actual = data.imagen; // Mantener la imagen anterior si no se selecciona otra nueva
+            
+            document.getElementById('modal-admin-titulo').innerText = "Panel de Administración - Editar Empleo";
+            document.getElementById('btn-submit-empleo').innerText = "Guardar Cambios";
+            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
+            
+            // Subir la vista del modal hacia arriba para ver el formulario
+            document.querySelector('#modal-admin > div').scrollTop = 0;
         }
 
         window.eliminarEmpleo = async function(id) {

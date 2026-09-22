@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolsa de Empleo - Desarrollo Económico Zacapu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        morena: {
+                            DEFAULT: '#6b1426', // Guinda institucional
+                            dark: '#520f1d',
+                            light: '#8a1d33',
+                            gold: '#d4af37'  // Dorado de acento
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col justify-between">
+
+    <!-- Encabezado Institucional con Logotipo -->
+    <header class="bg-morena text-white shadow-md border-b-4 border-morena-gold">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <!-- Logotipo Institucional y Títulos -->
+            <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                <!-- Fondo pastel elegante para resaltar el logo -->
+                <div class="bg-amber-50/90 p-2.5 rounded-xl shadow-inner border border-amber-200/60 flex items-center justify-center">
+                    <img src="zacapu_logo.png" alt="Zacapu Gobierno de Transformación 2024-2027" class="h-16 md:h-20 w-auto object-contain">
+                </div>
+                <div>
+                    <span class="text-xs uppercase tracking-widest text-morena-gold font-semibold">Ayuntamiento de Zacapu, Michoacán</span>
+                    <h1 class="text-xl md:text-2xl font-bold">Dirección de Desarrollo Económico</h1>
+                    <p class="text-xs text-gray-200">Plataforma Oficial de Vinculación Laboral</p>
+                </div>
+            </div>
+
+            <!-- Botones de Administración y Cerrar Sesión -->
+            <div class="flex items-center gap-3">
+                <button onclick="abrirModalAdmin()" class="bg-morena-gold hover:bg-yellow-600 text-morena font-bold px-4 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2 cursor-pointer text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
+                    </svg>
+                    Modo Administrador
+                </button>
+                <button id="btn-cerrar-sesion" onclick="cerrarSesionAdmin()" class="hidden bg-red-700 hover:bg-red-800 text-white font-bold px-3 py-2 rounded-lg shadow transition duration-200 text-sm flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Salir
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-extrabold text-gray-800">Ofertas de Empleo Disponibles</h2>
+            <p class="text-gray-600 mt-2">Encuentra oportunidades laborales en Zacapu y postúlate directamente vía WhatsApp.</p>
+        </div>
+
+        <!-- Contenedor de Ofertas de Trabajo -->
+        <div id="contenedor-empleos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p class="col-span-full text-center text-gray-500 py-10">Cargando ofertas de empleo...</p>
+        </div>
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="bg-gray-800 text-white text-center py-6 mt-12 border-t border-gray-700">
+        <p class="text-sm">Desarrollo Económico Zacapu, Michoacán &copy; 2026</p>
+        <p class="text-xs text-gray-400 mt-1">Transformando la economía local juntos.</p>
+    </footer>
+
+    <!-- MODAL: Contraseña de Administrador -->
+    <div id="modal-login" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+            <h3 class="text-xl font-bold text-morena mb-4">Acceso de Administrador</h3>
+            <p class="text-sm text-gray-600 mb-4">Ingrese la contraseña para gestionar las ofertas de empleo.</p>
+            <input type="password" id="input-password" placeholder="Contraseña" class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:outline-none focus:border-morena">
+            <div class="flex justify-end gap-3">
+                <button onclick="cerrarModalLogin()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
+                <button onclick="verificarPassword()" class="px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Panel de Administración (Agregar Ofertas) -->
+    <div id="modal-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50 px-4 overflow-y-auto">
+        <div class="bg-white rounded-xl max-w-2xl w-full p-6 shadow-2xl relative my-8">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h3 class="text-xl font-bold text-morena">Panel de Administración - Agregar Empleo</h3>
+                <button onclick="cerrarPanelAdmin()" class="text-gray-500 hover:text-gray-700 font-bold text-xl">&times;</button>
+            </div>
+
+            <!-- Formulario de Registro -->
+            <form id="form-empleo" onsubmit="agregarEmpleo(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Nombre de la Empresa</label>
+                    <input type="text" id="empresa" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Puesto</label>
+                    <input type="text" id="puesto" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Domicilio</label>
+                    <input type="text" id="domicilio" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Sueldo</label>
+                    <input type="text" id="sueldo" placeholder="Ej. $8,000 mensuales / A convenir" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">URL de la Imagen (Opcional)</label>
+                    <input type="url" id="imagen" placeholder="https://ejemplo.com/logo-empresa.jpg" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
+                    <p class="text-xs text-gray-500 mt-1">Puedes pegar el enlace directo de una imagen de internet o logotipo.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Descripción del Puesto</label>
+                    <textarea id="descripcion" rows="3" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">WhatsApp para enviar C.V. (Ej: 524341234567)</label>
+                    <input type="text" id="whatsapp" placeholder="524341234567" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
+                </div>
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" onclick="cerrarPanelAdmin()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cerrar</button>
+                    <button type="submit" class="px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition font-semibold">Publicar Oferta</button>
+                </div>
+            </form>
+
+            <!-- Lista para eliminar ofertas existentes -->
+            <div class="mt-8 border-t pt-6">
+                <h4 class="text-lg font-bold text-gray-800 mb-3">Ofertas Publicadas (Eliminar)</h4>
+                <div id="lista-admin-empleos" class="space-y-2 max-h-48 overflow-y-auto">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Lógica y Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDV6UAIZkZQZBQzIRAPbPDQOXlVEuor1X0",
+            authDomain: "empleo-zacapu.firebaseapp.com",
+            projectId: "empleo-zacapu",
+            storageBucket: "empleo-zacapu.firebasestorage.app",
+            messagingSenderId: "872513968823",
+            appId: "1:872513968823:web:61a1dc61394b54c2bb0b32",
+            measurementId: "G-BJEJPC9BSG"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let esAdmin = false;
+
+        window.abrirModalAdmin = function() {
+            if (esAdmin) {
+                document.getElementById('modal-admin').classList.remove('hidden');
+                cargarEmpleosAdmin();
+            } else {
+                document.getElementById('modal-login').classList.remove('hidden');
+            }
+        }
+
+        window.cerrarModalLogin = function() {
+            document.getElementById('modal-login').classList.add('hidden');
+            document.getElementById('input-password').value = '';
+        }
+
+        window.verificarPassword = function() {
+            const pass = document.getElementById('input-password').value;
+            if (pass === "20260103") {
+                esAdmin = true;
+                cerrarModalLogin();
+                document.getElementById('btn-cerrar-sesion').classList.remove('hidden');
+                document.getElementById('modal-admin').classList.remove('hidden');
+                cargarEmpleosAdmin();
+            } else {
+                alert("Contraseña incorrecta");
+            }
+        }
+
+        window.cerrarSesionAdmin = function() {
+            esAdmin = false;
+            document.getElementById('btn-cerrar-sesion').classList.add('hidden');
+            alert("Has cerrado sesión del modo administrador correctamente.");
+        }
+
+        window.cerrarPanelAdmin = function() {
+            document.getElementById('modal-admin').classList.add('hidden');
+        }
+
+        function escucharEmpleos() {
+            const contenedor = document.getElementById('contenedor-empleos');
+            onSnapshot(collection(db, "empleos"), (snapshot) => {
+                contenedor.innerHTML = "";
+                if (snapshot.empty) {
+                    contenedor.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">No hay ofertas de empleo publicadas en este momento.</p>`;
+                    return;
+                }
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    
+                    const imagenSrc = data.imagen && data.imagen.trim() !== "" ? data.imagen : "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=600";
+
+                    const card = document.createElement('div');
+                    card.className = "bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition flex flex-col justify-between";
+                    card.innerHTML = `
+                        <div>
+                            <div class="h-40 w-full overflow-hidden bg-gray-100">
+                                <img src="${imagenSrc}" alt="Imagen del empleo" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <span class="text-xs font-semibold uppercase px-2.5 py-1 bg-red-100 text-morena rounded-full">${data.empresa}</span>
+                                <h3 class="text-xl font-bold text-gray-800 mt-3">${data.puesto}</h3>
+                                <p class="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    ${data.domicilio}
+                                </p>
+                                <p class="text-sm font-semibold text-green-700 mt-2">Sueldo: ${data.sueldo}</p>
+                                <p class="text-gray-700 text-sm mt-3 border-t pt-3">${data.descripcion}</p>
+                            </div>
+                        </div>
+                        <div class="px-6 pb-6 pt-2">
+                            <a href="https://wa.me/${data.whatsapp}?text=Hola,%20me%20interesa%20la%20vacante%20de%20${encodeURIComponent(data.puesto)}%20publicada%20por%20Desarrollo%20Económico%20Zacapu." target="_blank" class="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-lg transition duration-200 flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                Postularse vía WhatsApp
+                            </a>
+                        </div>
+                    `;
+                    contenedor.appendChild(card);
+                });
+            });
+        }
+
+        window.agregarEmpleo = async function(e) {
+            e.preventDefault();
+            const nuevoEmpleo = {
+                empresa: document.getElementById('empresa').value,
+                puesto: document.getElementById('puesto').value,
+                domicilio: document.getElementById('domicilio').value,
+                sueldo: document.getElementById('sueldo').value,
+                imagen: document.getElementById('imagen').value,
+                descripcion: document.getElementById('descripcion').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                fecha: new Date()
+            };
+
+            try {
+                await addDoc(collection(db, "empleos"), nuevoEmpleo);
+                alert("¡Oferta de empleo agregada exitosamente!");
+                document.getElementById('form-empleo').reset();
+                cerrarPanelAdmin();
+            } catch (error) {
+                console.error("Error al agregar empleo: ", error);
+                alert("Hubo un error al guardar el empleo.");
+            }
+        }
+
+        async function cargarEmpleosAdmin() {
+            const listaDiv = document.getElementById('lista-admin-empleos');
+            listaDiv.innerHTML = "Cargando...";
+            const querySnapshot = await getDocs(collection(db, "empleos"));
+            listaDiv.innerHTML = "";
+            
+            if (querySnapshot.empty) {
+                listaDiv.innerHTML = "<p class='text-sm text-gray-500'>No hay ofertas registradas.</p>";
+                return;
+            }
+
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const id = docSnap.id;
+
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-gray-50 p-3 rounded-lg border";
+                item.innerHTML = `
+                    <div>
+                        <p class="font-bold text-sm text-gray-800">${data.puesto} <span class="text-xs font-normal text-gray-500">(${data.empresa})</span></p>
+                    </div>
+                    <button onclick="eliminarEmpleo('${id}')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                        Eliminar
+                    </button>
+                `;
+                listaDiv.appendChild(item);
+            });
+        }
+
+        window.eliminarEmpleo = async function(id) {
+            if (confirm("¿Estás seguro de eliminar esta oferta de empleo?")) {
+                try {
+                    await deleteDoc(doc(db, "empleos", id));
+                    alert("Oferta eliminada correctamente.");
+                    cargarEmpleosAdmin();
+                } catch (error) {
+                    console.error("Error al eliminar: ", error);
+                    alert("No se pudo eliminar la oferta.");
+                }
+            }
+        }
+
+        escucharEmpleos();
+    </script>
+</body>
+</html>

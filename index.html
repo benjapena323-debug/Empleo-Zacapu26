@@ -42,13 +42,13 @@
 
             <!-- Botones de Administración y Cerrar Sesión -->
             <div class="flex items-center gap-3">
-                <button onclick="abrirModalAdmin()" class="bg-morena-gold hover:bg-yellow-600 text-morena font-bold px-4 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2 cursor-pointer text-sm">
+                <button id="btn-abrir-admin" class="bg-morena-gold hover:bg-yellow-600 text-morena font-bold px-4 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2 cursor-pointer text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
                     </svg>
                     Modo Administrador
                 </button>
-                <button id="btn-cerrar-sesion" onclick="cerrarSesionAdmin()" class="hidden bg-red-700 hover:bg-red-800 text-white font-bold px-3 py-2 rounded-lg shadow transition duration-200 text-sm flex items-center gap-1">
+                <button id="btn-cerrar-sesion" class="hidden bg-red-700 hover:bg-red-800 text-white font-bold px-3 py-2 rounded-lg shadow transition duration-200 text-sm flex items-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
@@ -84,8 +84,8 @@
             <p class="text-sm text-gray-600 mb-4">Ingrese la contraseña para gestionar las ofertas de empleo.</p>
             <input type="password" id="input-password" placeholder="Contraseña" class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:outline-none focus:border-morena">
             <div class="flex justify-end gap-3">
-                <button onclick="cerrarModalLogin()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
-                <button onclick="verificarPassword()" class="px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition">Entrar</button>
+                <button id="btn-cancelar-login" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
+                <button id="btn-entrar-login" class="px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition">Entrar</button>
             </div>
         </div>
     </div>
@@ -95,11 +95,11 @@
         <div class="bg-white rounded-xl max-w-2xl w-full p-6 shadow-2xl relative my-8">
             <div class="flex justify-between items-center mb-4 border-b pb-3">
                 <h3 id="modal-admin-titulo" class="text-xl font-bold text-morena">Panel de Administración - Agregar Empleo</h3>
-                <button onclick="cerrarPanelAdmin()" class="text-gray-500 hover:text-gray-700 font-bold text-xl">&times;</button>
+                <button id="btn-cerrar-panel" class="text-gray-500 hover:text-gray-700 font-bold text-xl">&times;</button>
             </div>
 
             <!-- Formulario de Registro / Edición -->
-            <form id="form-empleo" onsubmit="guardarEmpleo(event)" class="space-y-4">
+            <form id="form-empleo" class="space-y-4">
                 <input type="hidden" id="empleo-id">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700">Nombre de la Empresa</label>
@@ -131,9 +131,9 @@
                     <input type="text" id="whatsapp" placeholder="524341234567" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena">
                 </div>
                 <div class="flex justify-between items-center pt-4">
-                    <button type="button" id="btn-cancelar-edicion" onclick="resetearFormulario()" class="hidden px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition text-sm">Cancelar Edición</button>
+                    <button type="button" id="btn-cancelar-edicion" class="hidden px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition text-sm">Cancelar Edición</button>
                     <div class="flex gap-3 ml-auto">
-                        <button type="button" onclick="cerrarPanelAdmin()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cerrar</button>
+                        <button type="button" id="btn-cerrar-panel-footer" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cerrar</button>
                         <button type="submit" id="btn-submit-empleo" class="px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition font-semibold">Publicar Oferta</button>
                     </div>
                 </div>
@@ -170,7 +170,7 @@
         let esAdmin = false;
         let imagenBase64Actual = "";
 
-        window.abrirModalAdmin = function() {
+        function abrirModalAdmin() {
             if (esAdmin) {
                 document.getElementById('modal-admin').classList.remove('hidden');
                 cargarEmpleosAdmin();
@@ -179,12 +179,12 @@
             }
         }
 
-        window.cerrarModalLogin = function() {
+        function cerrarModalLogin() {
             document.getElementById('modal-login').classList.add('hidden');
             document.getElementById('input-password').value = '';
         }
 
-        window.verificarPassword = function() {
+        function verificarPassword() {
             const pass = document.getElementById('input-password').value;
             if (pass === "20260103") {
                 esAdmin = true;
@@ -197,18 +197,18 @@
             }
         }
 
-        window.cerrarSesionAdmin = function() {
+        function cerrarSesionAdmin() {
             esAdmin = false;
             document.getElementById('btn-cerrar-sesion').classList.add('hidden');
             alert("Has cerrado sesión del modo administrador correctamente.");
         }
 
-        window.cerrarPanelAdmin = function() {
+        function cerrarPanelAdmin() {
             document.getElementById('modal-admin').classList.add('hidden');
             resetearFormulario();
         }
 
-        window.resetearFormulario = function() {
+        function resetearFormulario() {
             document.getElementById('form-empleo').reset();
             document.getElementById('empleo-id').value = '';
             document.getElementById('modal-admin-titulo').innerText = "Panel de Administración - Agregar Empleo";
@@ -271,7 +271,7 @@
             });
         }
 
-        window.guardarEmpleo = async function(e) {
+        async function guardarEmpleo(e) {
             e.preventDefault();
             const id = document.getElementById('empleo-id').value;
             const fileInput = document.getElementById('imagen-file');
@@ -293,11 +293,9 @@
 
             try {
                 if (id) {
-                    // Actualizar empleo existente
                     await updateDoc(doc(db, "empleos", id), datosEmpleo);
                     alert("¡Oferta de empleo actualizada exitosamente!");
                 } else {
-                    // Crear nuevo empleo
                     datosEmpleo.fecha = new Date();
                     await addDoc(collection(db, "empleos"), datosEmpleo);
                     alert("¡Oferta de empleo agregada exitosamente!");
@@ -313,4 +311,103 @@
         async function cargarEmpleosAdmin() {
             const listaDiv = document.getElementById('lista-admin-empleos');
             listaDiv.innerHTML = "Cargando...";
-            const querySnapshot = await getDocs(
+            const querySnapshot = await getDocs(collection(db, "empleos"));
+            listaDiv.innerHTML = "";
+            
+            if (querySnapshot.empty) {
+                listaDiv.innerHTML = "<p class='text-sm text-gray-500'>No hay ofertas registradas.</p>";
+                return;
+            }
+
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const id = docSnap.id;
+
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-gray-50 p-3 rounded-lg border";
+                
+                const dataStr = encodeURIComponent(JSON.stringify({
+                    id,
+                    empresa: data.empresa || '',
+                    puesto: data.puesto || '',
+                    domicilio: data.domicilio || '',
+                    sueldo: data.sueldo || '',
+                    imagen: data.imagen || '',
+                    descripcion: data.descripcion || '',
+                    whatsapp: data.whatsapp || ''
+                }));
+
+                item.innerHTML = `
+                    <div>
+                        <p class="font-bold text-sm text-gray-800">${data.puesto} <span class="text-xs font-normal text-gray-500">(${data.empresa})</span></p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button data-editar="${dataStr}" class="btn-editar bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                            Editar
+                        </button>
+                        <button data-eliminar="${id}" class="btn-eliminar bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                            Eliminar
+                        </button>
+                    </div>
+                `;
+                listaDiv.appendChild(item);
+            });
+
+            // Asignar eventos a los botones generados dinámicamente de editar y eliminar
+            document.querySelectorAll('.btn-editar').forEach(btn => {
+                btn.addEventListener('click', () => prepararEdicion(btn.getAttribute('data-editar')));
+            });
+
+            document.querySelectorAll('.btn-eliminar').forEach(btn => {
+                btn.addEventListener('click', () => eliminarEmpleo(btn.getAttribute('data-eliminar')));
+            });
+        }
+
+        function prepararEdicion(encodedData) {
+            const data = JSON.parse(decodeURIComponent(encodedData));
+            
+            document.getElementById('empleo-id').value = data.id;
+            document.getElementById('empresa').value = data.empresa;
+            document.getElementById('puesto').value = data.puesto;
+            document.getElementById('domicilio').value = data.domicilio;
+            document.getElementById('sueldo').value = data.sueldo;
+            document.getElementById('descripcion').value = data.descripcion;
+            document.getElementById('whatsapp').value = data.whatsapp;
+            
+            imagenBase64Actual = data.imagen;
+            
+            document.getElementById('modal-admin-titulo').innerText = "Panel de Administración - Editar Empleo";
+            document.getElementById('btn-submit-empleo').innerText = "Guardar Cambios";
+            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
+            
+            document.querySelector('#modal-admin > div').scrollTop = 0;
+        }
+
+        async function eliminarEmpleo(id) {
+            if (confirm("¿Estás seguro de eliminar esta oferta de empleo?")) {
+                try {
+                    await deleteDoc(doc(db, "empleos", id));
+                    alert("Oferta eliminada correctamente.");
+                    cargarEmpleosAdmin();
+                } catch (error) {
+                    console.error("Error al eliminar: ", error);
+                    alert("No se pudo eliminar la oferta.");
+                }
+            }
+        }
+
+        // Conexión limpia de eventos por listeners (evita problemas de ámbito en módulos)
+        document.getElementById('btn-abrir-admin').addEventListener('click', abrirModalAdmin);
+        document.getElementById('btn-cerrar-sesion').addEventListener('click', cerrarSesionAdmin);
+        document.getElementById('btn-cancelar-login').addEventListener('click', cerrarModalLogin);
+        document.getElementById('btn-entrar-login').addEventListener('click', verificarPassword);
+        document.getElementById('btn-cerrar-panel').addEventListener('click', cerrarPanelAdmin);
+        document.getElementById('btn-cerrar-panel-footer').addEventListener('click', cerrarPanelAdmin);
+        document.getElementById('btn-cancelar-edicion').addEventListener('click', resetearFormulario);
+        document.getElementById('form-empleo').addEventListener('submit', guardarEmpleo);
+
+        // Inicializar escucha de empleos en tiempo real
+        escucharEmpleos();
+    </script>
+</body>
+</html>

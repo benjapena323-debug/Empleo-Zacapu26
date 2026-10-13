@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolsa de Empleo - Desarrollo Económico Zacapu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        morena: {
+                            DEFAULT: '#6b1426', // Guinda institucional
+                            dark: '#520f1d',
+                            light: '#8a1d33',
+                            gold: '#d4af37'  // Dorado de acento
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Ocultar barra de desplazamiento visual manteniendo la funcionalidad */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col justify-between">
+
+    <!-- Encabezado Institucional con Logotipo -->
+    <header class="bg-morena text-white shadow-md border-b-4 border-morena-gold">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            <!-- Logotipo Institucional y Títulos -->
+            <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                <!-- Logotipo directamente sobre el fondo guinda -->
+                <img src="zacapu_logo.png" alt="Zacapu Gobierno de Transformación 2024-2027" class="h-16 md:h-20 w-auto object-contain">
+                <div>
+                    <span class="text-xs uppercase tracking-widest text-morena-gold font-semibold">H. Ayuntamiento de Zacapu, Michoacán</span>
+                    <p class="text-xs uppercase tracking-wider text-gray-200 font-medium">Gobierno de Transformación</p>
+                    <h1 class="text-xl md:text-2xl font-bold mt-0.5">Dirección de Desarrollo Económico</h1>
+                    <p class="text-xs text-gray-200">Plataforma de Vinculación Laboral</p>
+                </div>
+            </div>
+
+            <!-- Botones de Administración y Cerrar Sesión -->
+            <div class="flex items-center gap-3">
+                <button id="btn-abrir-admin" onclick="abrirModalAdmin()" class="bg-morena-gold hover:bg-yellow-600 text-morena font-bold px-4 py-2 rounded-lg shadow transition duration-200 flex items-center gap-2 cursor-pointer text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
+                    </svg>
+                    Modo Administrador
+                </button>
+                <button id="btn-cerrar-sesion" onclick="cerrarSesionAdmin()" class="hidden bg-red-700 hover:bg-red-800 text-white font-bold px-3 py-2 rounded-lg shadow transition duration-200 text-sm flex items-center gap-1 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Salir
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal con Estructura de Columnas -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
+        <!-- Título en Estilo Botón / Recuadro Institucional -->
+        <div class="text-center mb-8">
+            <div class="inline-block bg-morena text-white px-8 py-3.5 rounded-xl shadow-lg border-2 border-morena-gold">
+                <h2 class="text-2xl md:text-3xl font-extrabold tracking-wide">Ofertas de Empleo Disponibles</h2>
+            </div>
+            <p class="text-gray-600 mt-3">Encuentra oportunidades laborales en Zacapu y postúlate directamente vía WhatsApp.</p>
+        </div>
+
+        <!-- Layout con Publicidad Lateral Izquierda y Contenido de Vacantes a la Derecha -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            
+            <!-- Columna Izquierda: Carrusel Automático de Publicidad -->
+            <aside class="lg:col-span-1 bg-white p-4 rounded-xl shadow-md border border-gray-200 flex flex-col items-center">
+                <h3 class="text-xs uppercase tracking-widest text-morena font-bold mb-3 text-center border-b pb-2 w-full">Publicidad</h3>
+                <div id="carrusel-publicidad" class="w-full relative overflow-hidden rounded-lg bg-gray-100 h-72 md:h-96 flex items-center justify-center">
+                    <p class="text-xs text-gray-400 text-center px-4">Cargando publicidad...</p>
+                </div>
+                <!-- Indicadores de puntos de publicidad -->
+                <div id="publicidad-dots" class="flex justify-center items-center gap-1.5 mt-3"></div>
+            </aside>
+
+            <!-- Columna Derecha: Carruseles de Vacantes (Activas y Ocupadas) -->
+            <section class="lg:col-span-3 space-y-12">
+                
+                <!-- SECCIÓN 1: CARRUSEL VACANTES ACTIVAS -->
+                <div class="relative px-2 md:px-12">
+                    <!-- Botón Desplazar Izquierda -->
+                    <button onclick="moverCarrusel('contenedor-empleos', -1)" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-morena p-3 rounded-full shadow-lg border border-gray-200 transition duration-200 hidden md:flex items-center justify-center focus:outline-none cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Contenedor Deslizable de Vacantes Activas -->
+                    <div id="contenedor-empleos" class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar gap-6 py-4">
+                        <p class="w-full text-center text-gray-500 py-10">Cargando ofertas de empleo...</p>
+                    </div>
+
+                    <!-- Botón Desplazar Derecha -->
+                    <button onclick="moverCarrusel('contenedor-empleos', 1)" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-morena p-3 rounded-full shadow-lg border border-gray-200 transition duration-200 hidden md:flex items-center justify-center focus:outline-none cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <!-- Puntos de Indicación -->
+                    <div id="carrusel-dots" class="flex justify-center items-center gap-2 mt-2"></div>
+                </div>
+
+                <!-- SECCIÓN 2: CARRUSEL VACANTES OCUPADAS -->
+                <div class="border-t pt-8">
+                    <div class="text-center mb-6">
+                        <span class="text-xs uppercase tracking-widest text-amber-800 font-bold bg-amber-100 px-3 py-1 rounded-full">Historial Laboral</span>
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-700 mt-2">Vacantes Ya Cubiertas</h3>
+                        <p class="text-xs text-gray-500">Puestos que han sido ocupados exitosamente a través de la plataforma.</p>
+                    </div>
+
+                    <div class="relative px-2 md:px-12">
+                        <!-- Botón Desplazar Izquierda -->
+                        <button onclick="moverCarrusel('contenedor-ocupadas', -1)" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-gray-600 p-3 rounded-full shadow-lg border border-gray-200 transition duration-200 hidden md:flex items-center justify-center focus:outline-none cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Contenedor Deslizable de Vacantes Ocupadas -->
+                        <div id="contenedor-ocupadas" class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar gap-6 py-4">
+                            <p class="w-full text-center text-gray-500 py-10">Cargando vacantes ocupadas...</p>
+                        </div>
+
+                        <!-- Botón Desplazar Derecha -->
+                        <button onclick="moverCarrusel('contenedor-ocupadas', 1)" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-gray-600 p-3 rounded-full shadow-lg border border-gray-200 transition duration-200 hidden md:flex items-center justify-center focus:outline-none cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+
+                        <!-- Puntos de Indicación -->
+                        <div id="ocupadas-dots" class="flex justify-center items-center gap-2 mt-2"></div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="bg-gray-800 text-white text-center py-6 mt-12 border-t border-gray-700">
+        <p class="text-sm">Desarrollo Económico Zacapu, Michoacán &copy; 2026</p>
+        <p class="text-xs text-gray-400 mt-1">Transformando la economía local juntos.</p>
+    </footer>
+
+    <!-- MODAL: Contraseña de Administrador -->
+    <div id="modal-login" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50 px-4">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl relative">
+            <h3 class="text-xl font-bold text-morena mb-4">Acceso de Administrador</h3>
+            <p class="text-sm text-gray-600 mb-4">Ingrese la contraseña para gestionar las ofertas de empleo y publicidad.</p>
+            <input type="password" id="input-password" placeholder="Contraseña" class="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 focus:outline-none focus:border-morena">
+            <div class="flex justify-end gap-3">
+                <button onclick="cerrarModalLogin()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition cursor-pointer">Cancelar</button>
+                <button onclick="verificarPassword()" class="px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition cursor-pointer">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Panel de Administración (Empleos + Publicidad) -->
+    <div id="modal-admin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50 px-4 overflow-y-auto">
+        <div id="modal-admin-content" class="bg-white rounded-xl max-w-3xl w-full p-6 shadow-2xl relative my-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h3 id="modal-admin-titulo" class="text-xl font-bold text-morena">Panel de Administración</h3>
+                <button onclick="cerrarPanelAdmin()" class="text-gray-500 hover:text-gray-700 font-bold text-xl cursor-pointer">&times;</button>
+            </div>
+
+            <!-- SECCIÓN 1: AGREGAR / EDITAR EMPLEO -->
+            <div class="bg-gray-50 p-4 rounded-xl border mb-6">
+                <h4 id="form-empleo-titulo" class="text-md font-bold text-gray-800 mb-3">Agregar Nueva Oferta de Empleo</h4>
+                <form id="form-empleo" onsubmit="guardarEmpleo(event)" class="space-y-4">
+                    <input type="hidden" id="empleo-id">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Nombre de la Empresa</label>
+                        <input type="text" id="empresa" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Puesto</label>
+                        <input type="text" id="puesto" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Domicilio</label>
+                        <input type="text" id="domicilio" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Sueldo</label>
+                        <input type="text" id="sueldo" placeholder="Ej. $8,000 mensuales / A convenir" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Imagen de la Vacante</label>
+                        <input type="file" id="imagen-file" accept="image/*" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena bg-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-morena file:text-white hover:file:bg-morena-dark cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Descripción del Puesto</label>
+                        <textarea id="descripcion" rows="3" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena bg-white"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">WhatsApp para enviar C.V. (Ej: 524341234567)</label>
+                        <input type="text" id="whatsapp" placeholder="524341234567" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena bg-white">
+                    </div>
+                    <div class="flex justify-between items-center pt-2">
+                        <button type="button" id="btn-cancelar-edicion" onclick="resetearFormulario()" class="hidden px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition text-sm cursor-pointer">Cancelar Edición</button>
+                        <button type="submit" id="btn-submit-empleo" class="ml-auto px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition font-semibold cursor-pointer">Publicar Oferta</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SECCIÓN 2: AGREGAR PUBLICIDAD (SOLO IMAGEN) -->
+            <div class="bg-gray-50 p-4 rounded-xl border mb-6">
+                <h4 class="text-md font-bold text-gray-800 mb-3">Agregar Publicidad (Imagen)</h4>
+                <form id="form-publicidad" onsubmit="guardarPublicidad(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700">Seleccionar Imagen Publicitaria</label>
+                        <input type="file" id="pub-imagen-file" accept="image/*" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-morena bg-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-morena file:text-white hover:file:bg-morena-dark cursor-pointer">
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="px-4 py-2 bg-morena text-white rounded-lg hover:bg-morena-dark transition font-semibold cursor-pointer">Subir Publicidad</button>
+                    </div>
+                </form>
+
+                <!-- Lista de Publicidad Subida -->
+                <div class="mt-4 border-t pt-4">
+                    <h5 class="text-sm font-bold text-gray-700 mb-2">Banners Publicitarios Activos</h5>
+                    <div id="lista-admin-publicidad" class="space-y-2 max-h-36 overflow-y-auto">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Listas de Gestión de Empleos en Panel -->
+            <div class="space-y-6">
+                <div class="border-t pt-4">
+                    <h4 class="text-lg font-bold text-gray-800 mb-3">Ofertas Activas</h4>
+                    <div id="lista-admin-empleos" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                </div>
+                <div class="border-t pt-4">
+                    <h4 class="text-lg font-bold text-gray-800 mb-3">Historial de Vacantes Ocupadas</h4>
+                    <div id="lista-admin-ocupadas" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end border-t pt-4">
+                <button type="button" onclick="cerrarPanelAdmin()" class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition cursor-pointer font-semibold">Cerrar Panel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Lógica y Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDV6UAIZkZQZBQzIRAPbPDQOXlVEuor1X0",
+            authDomain: "empleo-zacapu.firebaseapp.com",
+            projectId: "empleo-zacapu",
+            storageBucket: "empleo-zacapu.firebasestorage.app",
+            messagingSenderId: "872513968823",
+            appId: "1:872513968823:web:61a1dc61394b54c2bb0b32",
+            measurementId: "G-BJEJPC9BSG"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let esAdmin = false;
+        let imagenBase64Actual = "";
+        let publicidadItems = [];
+        let pubIndexActual = 0;
+        let pubInterval = null;
+
+        // Definir funciones en window explícitamente para asegurar disponibilidad global
+        window.abrirModalAdmin = function() {
+            if (esAdmin) {
+                document.getElementById('modal-admin').classList.remove('hidden');
+                document.getElementById('modal-admin-content').scrollTop = 0;
+                cargarEmpleosAdmin();
+                cargarPublicidadAdmin();
+            } else {
+                document.getElementById('modal-login').classList.remove('hidden');
+            }
+        };
+
+        window.cerrarModalLogin = function() {
+            document.getElementById('modal-login').classList.add('hidden');
+            document.getElementById('input-password').value = '';
+        };
+
+        window.verificarPassword = function() {
+            const pass = document.getElementById('input-password').value;
+            if (pass === "20260103") {
+                esAdmin = true;
+                window.cerrarModalLogin();
+                document.getElementById('btn-cerrar-sesion').classList.remove('hidden');
+                document.getElementById('modal-admin').classList.remove('hidden');
+                document.getElementById('modal-admin-content').scrollTop = 0;
+                cargarEmpleosAdmin();
+                cargarPublicidadAdmin();
+            } else {
+                alert("Contraseña incorrecta");
+            }
+        };
+
+        window.cerrarSesionAdmin = function() {
+            esAdmin = false;
+            document.getElementById('btn-cerrar-sesion').classList.add('hidden');
+            alert("Has cerrado sesión del modo administrador correctamente.");
+        };
+
+        window.cerrarPanelAdmin = function() {
+            document.getElementById('modal-admin').classList.add('hidden');
+            window.resetearFormulario();
+        };
+
+        window.resetearFormulario = function() {
+            document.getElementById('form-empleo').reset();
+            document.getElementById('empleo-id').value = '';
+            document.getElementById('form-empleo-titulo').innerText = "Agregar Nueva Oferta de Empleo";
+            document.getElementById('btn-submit-empleo').innerText = "Publicar Oferta";
+            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
+            imagenBase64Actual = "";
+            document.getElementById('modal-admin-content').scrollTop = 0;
+        };
+
+        function convertirImagenABase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        /* --- NAVEGACIÓN Y PUNTOS EN CARRUSELES --- */
+        function actualizarPuntosGenericos(containerId, dotsId) {
+            const contenedor = document.getElementById(containerId);
+            const dotsDiv = document.getElementById(dotsId);
+            if (!contenedor || !dotsDiv) return;
+
+            const totalCards = contenedor.children.length;
+            dotsDiv.innerHTML = "";
+            if (totalCards <= 1) return;
+
+            const cardWidth = contenedor.firstElementChild ? contenedor.firstElementChild.offsetWidth + 24 : 0;
+            const scrollPos = contenedor.scrollLeft;
+            const activeIndex = Math.round(scrollPos / cardWidth);
+
+            for (let i = 0; i < totalCards; i++) {
+                const dot = document.createElement('button');
+                dot.className = `h-2.5 rounded-full transition-all duration-300 ${i === activeIndex ? 'w-8 bg-morena' : 'w-2.5 bg-gray-300 hover:bg-gray-400'}`;
+                dot.addEventListener('click', () => {
+                    contenedor.scrollTo({ left: i * cardWidth, behavior: 'smooth' });
+                });
+                dotsDiv.appendChild(dot);
+            }
+        }
+
+        window.moverCarrusel = function(containerId, direccion) {
+            const contenedor = document.getElementById(containerId);
+            const width = contenedor.firstElementChild ? contenedor.firstElementChild.offsetWidth + 24 : 300;
+            contenedor.scrollBy({ left: width * direccion, behavior: 'smooth' });
+        };
+
+        /* --- CARRUSEL AUTOMÁTICO DE PUBLICIDAD --- */
+        function renderizarPublicidadCarrusel() {
+            const carruselContainer = document.getElementById('carrusel-publicidad');
+            const dotsContainer = document.getElementById('publicidad-dots');
+
+            if (!publicidadItems || publicidadItems.length === 0) {
+                carruselContainer.innerHTML = `<p class="text-xs text-gray-400 text-center px-4">Sin publicidad disponible</p>`;
+                dotsContainer.innerHTML = "";
+                return;
+            }
+
+            if (pubIndexActual >= publicidadItems.length) pubIndexActual = 0;
+            const pubActual = publicidadItems[pubIndexActual];
+
+            carruselContainer.innerHTML = `
+                <div class="w-full h-full relative">
+                    <img src="${pubActual.imagen}" alt="Publicidad" class="w-full h-full object-cover rounded-lg shadow-inner">
+                </div>
+            `;
+
+            dotsContainer.innerHTML = "";
+            publicidadItems.forEach((_, idx) => {
+                const dot = document.createElement('button');
+                dot.className = `h-2 rounded-full transition-all duration-300 cursor-pointer ${idx === pubIndexActual ? 'w-6 bg-morena' : 'w-2 bg-gray-300'}`;
+                dot.addEventListener('click', () => {
+                    pubIndexActual = idx;
+                    renderizarPublicidadCarrusel();
+                    iniciarCarruselPublicidadAutomatico();
+                });
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        function iniciarCarruselPublicidadAutomatico() {
+            if (pubInterval) clearInterval(pubInterval);
+            pubInterval = setInterval(() => {
+                if (publicidadItems.length > 0) {
+                    pubIndexActual = (pubIndexActual + 1) % publicidadItems.length;
+                    renderizarPublicidadCarrusel();
+                }
+            }, 4500);
+        }
+
+        /* --- ESCUCHAR EMPLEOS (ACTIVAS Y OCUPADAS EN PÁGINA) --- */
+        function escucharEmpleos() {
+            const contenedorActivas = document.getElementById('contenedor-empleos');
+            const contenedorOcupadas = document.getElementById('contenedor-ocupadas');
+
+            onSnapshot(collection(db, "empleos"), (snapshot) => {
+                contenedorActivas.innerHTML = "";
+                contenedorOcupadas.innerHTML = "";
+
+                const empleosActivos = [];
+                const empleosOcupados = [];
+
+                snapshot.forEach((docSnap) => {
+                    const data = { id: docSnap.id, ...docSnap.data() };
+                    if (data.ocupada) {
+                        empleosOcupados.push(data);
+                    } else {
+                        empleosActivos.push(data);
+                    }
+                });
+
+                // Renderizar Vacantes Activas
+                if (empleosActivos.length === 0) {
+                    contenedorActivas.innerHTML = `<p class="w-full text-center text-gray-500 py-10">No hay ofertas de empleo disponibles en este momento.</p>`;
+                } else {
+                    empleosActivos.forEach((data) => {
+                        const imagenSrc = data.imagen && data.imagen.trim() !== "" ? data.imagen : "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=600";
+                        const card = document.createElement('div');
+                        card.className = "w-full flex-shrink-0 snap-center bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 transition flex flex-col justify-between";
+                        card.innerHTML = `
+                            <div>
+                                <div class="h-48 md:h-64 w-full overflow-hidden bg-gray-100">
+                                    <img src="${imagenSrc}" alt="Imagen del empleo" class="w-full h-full object-cover">
+                                </div>
+                                <div class="p-6">
+                                    <span class="text-xs font-semibold uppercase px-2.5 py-1 bg-red-100 text-morena rounded-full">${data.empresa}</span>
+                                    <h3 class="text-2xl font-bold text-gray-800 mt-3">${data.puesto}</h3>
+                                    <p class="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        ${data.domicilio}
+                                    </p>
+                                    <p class="text-base font-semibold text-green-700 mt-2">Sueldo: ${data.sueldo}</p>
+                                    <p class="text-gray-700 text-sm md:text-base mt-3 border-t pt-3 leading-relaxed">${data.descripcion}</p>
+                                </div>
+                            </div>
+                            <div class="px-6 pb-6 pt-2">
+                                <a href="https://wa.me/${data.whatsapp}?text=Hola,%20me%20interesa%20la%20vacante%20de%20${encodeURIComponent(data.puesto)}%20publicada%20por%20Desarrollo%20Económico%20Zacapu." target="_blank" class="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200 flex items-center justify-center gap-2 text-base">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                    Postularse vía WhatsApp
+                                </a>
+                            </div>
+                        `;
+                        contenedorActivas.appendChild(card);
+                    });
+                }
+
+                // Renderizar Vacantes Ocupadas
+                if (empleosOcupados.length === 0) {
+                    contenedorOcupadas.innerHTML = `<p class="w-full text-center text-gray-500 py-6 text-sm">No hay registro de vacantes ocupadas recientemente.</p>`;
+                } else {
+                    empleosOcupados.forEach((data) => {
+                        const imagenSrc = data.imagen && data.imagen.trim() !== "" ? data.imagen : "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=600";
+                        const card = document.createElement('div');
+                        card.className = "w-full flex-shrink-0 snap-center bg-gray-100 rounded-xl shadow overflow-hidden border border-gray-300 transition flex flex-col justify-between opacity-85";
+                        card.innerHTML = `
+                            <div>
+                                <div class="h-40 md:h-52 w-full overflow-hidden bg-gray-200 relative">
+                                    <img src="${imagenSrc}" alt="Imagen del empleo" class="w-full h-full object-cover grayscale">
+                                    <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                        <span class="bg-amber-600 text-white font-black text-sm uppercase px-4 py-1.5 rounded-full shadow-lg border border-white tracking-widest">Vacante Ocupada</span>
+                                    </div>
+                                </div>
+                                <div class="p-6">
+                                    <span class="text-xs font-semibold uppercase px-2.5 py-1 bg-gray-200 text-gray-700 rounded-full">${data.empresa}</span>
+                                    <h3 class="text-xl font-bold text-gray-700 mt-3">${data.puesto}</h3>
+                                    <p class="text-sm text-gray-500 mt-1">${data.domicilio}</p>
+                                </div>
+                            </div>
+                            <div class="px-6 pb-6 pt-2">
+                                <button disabled class="w-full bg-gray-400 text-white font-bold py-2.5 rounded-lg text-sm cursor-not-allowed">
+                                    Proceso Finalizado
+                                </button>
+                            </div>
+                        `;
+                        contenedorOcupadas.appendChild(card);
+                    });
+                }
+
+                actualizarPuntosGenericos('contenedor-empleos', 'carrusel-dots');
+                actualizarPuntosGenericos('contenedor-ocupadas', 'ocupadas-dots');
+            });
+        }
+
+        function escucharPublicidad() {
+            onSnapshot(collection(db, "publicidad"), (snapshot) => {
+                publicidadItems = [];
+                snapshot.forEach((docSnap) => {
+                    publicidadItems.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderizarPublicidadCarrusel();
+            });
+        }
+
+        window.guardarPublicidad = async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('pub-imagen-file');
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert("Selecciona una imagen para la publicidad.");
+                return;
+            }
+
+            try {
+                const imagenUrl = await convertirImagenABase64(fileInput.files[0]);
+                await addDoc(collection(db, "publicidad"), {
+                    imagen: imagenUrl,
+                    fecha: new Date()
+                });
+                alert("¡Publicidad subida exitosamente!");
+                document.getElementById('form-publicidad').reset();
+                cargarPublicidadAdmin();
+            } catch (error) {
+                console.error("Error al subir publicidad:", error);
+                alert("Hubo un error al guardar la publicidad.");
+            }
+        };
+
+        async function cargarPublicidadAdmin() {
+            const listaPubDiv = document.getElementById('lista-admin-publicidad');
+            listaPubDiv.innerHTML = "Cargando...";
+            const querySnapshot = await getDocs(collection(db, "publicidad"));
+            listaPubDiv.innerHTML = "";
+
+            if (querySnapshot.empty) {
+                listaPubDiv.innerHTML = "<p class='text-xs text-gray-500'>No hay anuncios registrados.</p>";
+                return;
+            }
+
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const id = docSnap.id;
+
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-white p-2 rounded border text-xs";
+                item.innerHTML = `
+                    <div class="h-10 w-10 overflow-hidden rounded bg-gray-100">
+                        <img src="${data.imagen}" class="w-full h-full object-cover">
+                    </div>
+                    <button onclick="eliminarPublicidad('${id}')" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-2 py-1 rounded transition cursor-pointer">Eliminar</button>
+                `;
+                listaPubDiv.appendChild(item);
+            });
+        }
+
+        window.eliminarPublicidad = async function(id) {
+            if (confirm("¿Estás seguro de eliminar este anuncio publicitario?")) {
+                try {
+                    await deleteDoc(doc(db, "publicidad", id));
+                    alert("Anuncio eliminado correctamente.");
+                    cargarPublicidadAdmin();
+                } catch (error) {
+                    console.error("Error al eliminar publicidad:", error);
+                    alert("No se pudo eliminar el anuncio.");
+                }
+            }
+        };
+
+        window.guardarEmpleo = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('empleo-id').value;
+            const fileInput = document.getElementById('imagen-file');
+            
+            let imagenUrl = imagenBase64Actual;
+            if (fileInput.files && fileInput.files[0]) {
+                imagenUrl = await convertirImagenABase64(fileInput.files[0]);
+            }
+
+            const datosEmpleo = {
+                empresa: document.getElementById('empresa').value,
+                puesto: document.getElementById('puesto').value,
+                domicilio: document.getElementById('domicilio').value,
+                sueldo: document.getElementById('sueldo').value,
+                imagen: imagenUrl,
+                descripcion: document.getElementById('descripcion').value,
+                whatsapp: document.getElementById('whatsapp').value,
+                ocupada: false
+            };
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "empleos", id), datosEmpleo);
+                    alert("¡Oferta de empleo actualizada exitosamente!");
+                } else {
+                    datosEmpleo.fecha = new Date();
+                    await addDoc(collection(db, "empleos"), datosEmpleo);
+                    alert("¡Oferta de empleo agregada exitosamente!");
+                }
+                window.resetearFormulario();
+                cargarEmpleosAdmin();
+            } catch (error) {
+                console.error("Error al guardar empleo: ", error);
+                alert("Hubo un error al guardar el empleo.");
+            }
+        };
+
+        async function cargarEmpleosAdmin() {
+            const listaDiv = document.getElementById('lista-admin-empleos');
+            const listaOcupadasDiv = document.getElementById('lista-admin-ocupadas');
+            
+            listaDiv.innerHTML = "Cargando...";
+            listaOcupadasDiv.innerHTML = "Cargando...";
+
+            const querySnapshot = await getDocs(collection(db, "empleos"));
+            listaDiv.innerHTML = "";
+            listaOcupadasDiv.innerHTML = "";
+            
+            if (querySnapshot.empty) {
+                listaDiv.innerHTML = "<p class='text-sm text-gray-500'>No hay ofertas registradas.</p>";
+                listaOcupadasDiv.innerHTML = "<p class='text-sm text-gray-500'>No hay vacantes ocupadas registradas.</p>";
+                return;
+            }
+
+            let hayActivas = false;
+            let hayOcupadas = false;
+
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const id = docSnap.id;
+
+                const dataStr = encodeURIComponent(JSON.stringify({
+                    id,
+                    empresa: data.empresa || '',
+                    puesto: data.puesto || '',
+                    domicilio: data.domicilio || '',
+                    sueldo: data.sueldo || '',
+                    imagen: data.imagen || '',
+                    descripcion: data.descripcion || '',
+                    whatsapp: data.whatsapp || ''
+                }));
+
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-gray-50 p-3 rounded-lg border text-xs md:text-sm";
+
+                if (data.ocupada) {
+                    hayOcupadas = true;
+                    item.innerHTML = `
+                        <div>
+                            <p class="font-bold text-gray-600">${data.puesto} <span class="text-xs font-normal text-gray-400">(${data.empresa})</span></p>
+                            <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold">Ocupada</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="marcarOcupada('${id}', false)" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-2 py-1 rounded transition cursor-pointer">Reactivar</button>
+                            <button onclick="eliminarEmpleo('${id}')" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-2 py-1 rounded transition cursor-pointer">Eliminar</button>
+                        </div>
+                    `;
+                    listaOcupadasDiv.appendChild(item);
+                } else {
+                    hayActivas = true;
+                    item.innerHTML = `
+                        <div>
+                            <p class="font-bold text-gray-800">${data.puesto} <span class="text-xs font-normal text-gray-500">(${data.empresa})</span></p>
+                        </div>
+                        <div class="flex gap-2 flex-wrap justify-end">
+                            <button onclick="prepararEdicion('${dataStr}')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-2.5 py-1 rounded transition cursor-pointer">Editar</button>
+                            <button onclick="marcarOcupada('${id}', true)" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-2.5 py-1 rounded transition cursor-pointer">Ocupada</button>
+                            <button onclick="eliminarEmpleo('${id}')" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-2.5 py-1 rounded transition cursor-pointer">Eliminar</button>
+                        </div>
+                    `;
+                    listaDiv.appendChild(item);
+                }
+            });
+
+            if (!hayActivas) listaDiv.innerHTML = "<p class='text-sm text-gray-500'>No hay ofertas activas.</p>";
+            if (!hayOcupadas) listaOcupadasDiv.innerHTML = "<p class='text-sm text-gray-500'>No hay vacantes ocupadas en el historial.</p>";
+        }
+
+        window.marcarOcupada = async function(id, estado) {
+            try {
+                await updateDoc(doc(db, "empleos", id), { ocupada: estado });
+                alert(estado ? "La vacante ha sido movida al carrusel de ocupadas." : "La vacante ha sido reactivada en la sección principal.");
+                cargarEmpleosAdmin();
+            } catch (error) {
+                console.error("Error al actualizar estado:", error);
+                alert("No se pudo actualizar el estado.");
+            }
+        };
+
+        window.prepararEdicion = function(encodedData) {
+            const data = JSON.parse(decodeURIComponent(encodedData));
+            
+            document.getElementById('empleo-id').value = data.id;
+            document.getElementById('empresa').value = data.empresa;
+            document.getElementById('puesto').value = data.puesto;
+            document.getElementById('domicilio').value = data.domicilio;
+            document.getElementById('sueldo').value = data.sueldo;
+            document.getElementById('descripcion').value = data.descripcion;
+            document.getElementById('whatsapp').value = data.whatsapp;
+            
+            imagenBase64Actual = data.imagen;
+            
+            document.getElementById('form-empleo-titulo').innerText = "Editar Oferta de Empleo";
+            document.getElementById('btn-submit-empleo').innerText = "Guardar Cambios";
+            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
+            document.getElementById('modal-admin-content').scrollTop = 0;
+        };
+
+        window.eliminarEmpleo = async function(id) {
+            if (confirm("¿Estás seguro de eliminar permanentemente esta oferta?")) {
+                try {
+                    await deleteDoc(doc(db, "empleos", id));
+                    alert("Oferta eliminada correctamente.");
+                    cargarEmpleosAdmin();
+                } catch (error) {
+                    console.error("Error al eliminar:", error);
+                    alert("No se pudo eliminar.");
+                }
+            }
+        };
+
+        // Event listeners directos como respaldo para garantizar la apertura de modal
+        document.getElementById('btn-abrir-admin').addEventListener('click', window.abrirModalAdmin);
+
+        document.getElementById('contenedor-empleos').addEventListener('scroll', () => {
+            actualizarPuntosGenericos('contenedor-empleos', 'carrusel-dots');
+        });
+
+        document.getElementById('contenedor-ocupadas').addEventListener('scroll', () => {
+            actualizarPuntosGenericos('contenedor-ocupadas', 'ocupadas-dots');
+        });
+
+        document.getElementById('input-password').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') window.verificarPassword();
+        });
+
+        // Inicializar listeners y carruseles
+        escucharEmpleos();
+        escucharPublicidad();
+        iniciarCarruselPublicidadAutomatico();
+    </script>
+</body>
+</html>

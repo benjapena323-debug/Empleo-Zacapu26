@@ -31,10 +31,8 @@
             
             <!-- Logotipo Institucional y Títulos -->
             <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-                <!-- Fondo pastel elegante para resaltar el logo -->
-                <div class="bg-amber-50/90 p-2.5 rounded-xl shadow-inner border border-amber-200/60 flex items-center justify-center">
-                    <img src="zacapu_logo.png" alt="Zacapu Gobierno de Transformación 2024-2027" class="h-16 md:h-20 w-auto object-contain">
-                </div>
+                <!-- Logotipo directamente sobre el fondo guinda -->
+                <img src="zacapu_logo.png" alt="Zacapu Gobierno de Transformación 2024-2027" class="h-16 md:h-20 w-auto object-contain">
                 <div>
                     <span class="text-xs uppercase tracking-widest text-morena-gold font-semibold">Ayuntamiento de Zacapu, Michoacán</span>
                     <h1 class="text-xl md:text-2xl font-bold">Dirección de Desarrollo Económico</h1>
@@ -315,85 +313,4 @@
         async function cargarEmpleosAdmin() {
             const listaDiv = document.getElementById('lista-admin-empleos');
             listaDiv.innerHTML = "Cargando...";
-            const querySnapshot = await getDocs(collection(db, "empleos"));
-            listaDiv.innerHTML = "";
-            
-            if (querySnapshot.empty) {
-                listaDiv.innerHTML = "<p class='text-sm text-gray-500'>No hay ofertas registradas.</p>";
-                return;
-            }
-
-            querySnapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                const id = docSnap.id;
-
-                const item = document.createElement('div');
-                item.className = "flex justify-between items-center bg-gray-50 p-3 rounded-lg border";
-                
-                // Escapar comillas para inyectar correctamente en el evento onclick
-                const dataStr = encodeURIComponent(JSON.stringify({
-                    id,
-                    empresa: data.empresa || '',
-                    puesto: data.puesto || '',
-                    domicilio: data.domicilio || '',
-                    sueldo: data.sueldo || '',
-                    imagen: data.imagen || '',
-                    descripcion: data.descripcion || '',
-                    whatsapp: data.whatsapp || ''
-                }));
-
-                item.innerHTML = `
-                    <div>
-                        <p class="font-bold text-sm text-gray-800">${data.puesto} <span class="text-xs font-normal text-gray-500">(${data.empresa})</span></p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="prepararEdicion('${dataStr}')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                            Editar
-                        </button>
-                        <button onclick="eliminarEmpleo('${id}')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                            Eliminar
-                        </button>
-                    </div>
-                `;
-                listaDiv.appendChild(item);
-            });
-        }
-
-        window.prepararEdicion = function(encodedData) {
-            const data = JSON.parse(decodeURIComponent(encodedData));
-            
-            document.getElementById('empleo-id').value = data.id;
-            document.getElementById('empresa').value = data.empresa;
-            document.getElementById('puesto').value = data.puesto;
-            document.getElementById('domicilio').value = data.domicilio;
-            document.getElementById('sueldo').value = data.sueldo;
-            document.getElementById('descripcion').value = data.descripcion;
-            document.getElementById('whatsapp').value = data.whatsapp;
-            
-            imagenBase64Actual = data.imagen; // Mantener la imagen anterior si no se selecciona otra nueva
-            
-            document.getElementById('modal-admin-titulo').innerText = "Panel de Administración - Editar Empleo";
-            document.getElementById('btn-submit-empleo').innerText = "Guardar Cambios";
-            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
-            
-            // Subir la vista del modal hacia arriba para ver el formulario
-            document.querySelector('#modal-admin > div').scrollTop = 0;
-        }
-
-        window.eliminarEmpleo = async function(id) {
-            if (confirm("¿Estás seguro de eliminar esta oferta de empleo?")) {
-                try {
-                    await deleteDoc(doc(db, "empleos", id));
-                    alert("Oferta eliminada correctamente.");
-                    cargarEmpleosAdmin();
-                } catch (error) {
-                    console.error("Error al eliminar: ", error);
-                    alert("No se pudo eliminar la oferta.");
-                }
-            }
-        }
-
-        escucharEmpleos();
-    </script>
-</body>
-</html>
+            const querySnapshot = await getDocs(
